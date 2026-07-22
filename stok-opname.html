@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem ATK - Stok Opname</title>
+    <style>
+        /* ============================================
+           CSS VARIABLES
+           ============================================ */
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2b6cb0;
+            --primary-lighter: #4299e1;
+            --success: #48bb78;
+            --success-dark: #276749;
+            --danger: #fc8181;
+            --danger-dark: #c53030;
+            --warning: #ed8936;
+            --gray-50: #f7fafc;
+            --gray-100: #edf2f7;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e0;
+            --gray-500: #718096;
+            --gray-700: #2d3748;
+            --gray-900: #1a202c;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        body { background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 24px 32px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--shadow-md);
+        }
+        .header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .header .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+        .header-actions .btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .header-actions .btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+        /* NAVIGATION */
+        .nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav a {
+            padding: 10px 22px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav a:hover { background: var(--gray-100); }
+        .nav a.active {
+            background: var(--primary-light);
+            color: white;
+            box-shadow: 0 2px 10px rgba(43, 108, 176, 0.3);
+        }
+
+        /* CARDS */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            transition: var(--transition);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+        .card-title .badge-count {
+            background: var(--primary-light);
+            color: white;
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* FORM */
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: white;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--primary-light); color: white; }
+        .btn-primary:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3); }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #dd6b20; transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-dark); transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+        .btn-outline:hover { border-color: var(--primary-light); color: var(--primary-light); }
+        .btn-sm { padding: 5px 14px; font-size: 12px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* TABLE */
+        .table-wrapper { overflow-x: auto; margin-top: 12px; }
+        .table-wrapper table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .table-wrapper th {
+            background: var(--gray-100);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--gray-700);
+            white-space: nowrap;
+        }
+        .table-wrapper td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
+        }
+        .table-wrapper tr:hover td { background: var(--gray-50); }
+        .table-wrapper .badge {
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .table-wrapper .badge-success { background: #c6f6d5; color: var(--success-dark); }
+        .table-wrapper .badge-danger { background: #fed7d7; color: var(--danger-dark); }
+        .table-wrapper .badge-warning { background: #feebc8; color: #975a16; }
+        .table-wrapper .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+        }
+        .table-wrapper .empty-state .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+        .table-wrapper .status-match { color: var(--success-dark); font-weight: 600; }
+        .table-wrapper .status-mismatch { color: var(--danger-dark); font-weight: 600; }
+        .table-wrapper .status-pending { color: var(--warning); font-weight: 600; }
+
+        /* OPNAME INPUT */
+        .opname-input {
+            width: 100px;
+            padding: 6px 8px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .opname-input:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
+        }
+        .opname-input.mismatch {
+            border-color: var(--danger);
+            background: #fff5f5;
+        }
+        .opname-input.match {
+            border-color: var(--success);
+            background: #f0fff4;
+        }
+        .opname-input:disabled {
+            background: #f7fafc;
+            cursor: not-allowed;
+        }
+
+        /* ALERT */
+        .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; }
+        .alert-success { background: #c6f6d5; color: var(--success-dark); border-left: 4px solid var(--success); }
+        .alert-danger { background: #fed7d7; color: var(--danger-dark); border-left: 4px solid var(--danger); }
+        .alert-info { background: #bee3f8; color: var(--primary); border-left: 4px solid var(--primary-light); }
+        .alert-warning { background: #feebc8; color: #975a16; border-left: 4px solid var(--warning); }
+
+        /* PAGINATION */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+        }
+        .pagination .info {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        .pagination .pages {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .pagination .pages .btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            min-width: 36px;
+            justify-content: center;
+        }
+        .pagination .pages .btn.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        /* ACTION BAR */
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid var(--gray-200);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            .form-row-4 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .header { padding: 18px 20px; flex-direction: column; text-align: center; }
+            .header h1 { font-size: 20px; justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr; }
+            .form-row-4 { grid-template-columns: 1fr; }
+            .pagination { flex-direction: column; align-items: center; }
+            .opname-input { width: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div>
+            <h1>📊 Stok Opname Fisik</h1>
+            <div class="subtitle">Cocokkan stok sistem dengan stok fisik & update langsung</div>
+        </div>
+        <div class="header-actions">
+            <button onclick="location.reload()" class="btn">⟳ Refresh</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav">
+        <a href="index.html">📊 Dashboard</a>
+        <a href="permintaan.html">📝 Permintaan</a>
+        <a href="pembelian.html">🛒 Pembelian</a>
+        <a href="kartu-stok.html">📋 Kartu Stok</a>
+        <a href="stok-opname.html" class="active">📊 Stok Opname</a>
+    </nav>
+
+    <!-- ============================================
+    INFORMASI DOKUMEN
+    ============================================ -->
+    <div class="card">
+        <div class="card-title">📄 Informasi Opname</div>
+        <div class="form-row-3">
+            <div class="form-group">
+                <label>📝 No Opname</label>
+                <input type="text" id="noOpname" placeholder="OTOMATIS" readonly style="background:#f7fafc; font-weight:600;">
+            </div>
+            <div class="form-group">
+                <label>📅 Tanggal Opname</label>
+                <input type="date" id="tanggalOpname">
+            </div>
+            <div class="form-group">
+                <label>👤 Petugas</label>
+                <input type="text" id="petugas" placeholder="Nama petugas opname">
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    TABEL OPNAME - TANPA FILTER
+    ============================================ -->
+    <div class="card">
+        <div class="card-title">
+            📋 Daftar Barang Opname
+            <span class="badge-count" id="totalBarangCount">0</span>
+            <span class="badge-count" style="background:var(--success);" id="matchCount">0 Cocok</span>
+            <span class="badge-count" style="background:var(--danger);" id="mismatchCount">0 Tidak Cocok</span>
+            <span class="badge-count" style="background:var(--warning);" id="pendingCount">0 Belum</span>
+        </div>
+
+        <!-- ALERT CONTAINER -->
+        <div id="alertContainer"></div>
+
+        <!-- TABLE -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:5%;">No</th>
+                        <th style="width:15%;">Kode Barang</th>
+                        <th style="width:30%;">Nama Barang</th>
+                        <th style="width:10%;">Satuan</th>
+                        <th style="width:12%;">Stok Sistem</th>
+                        <th style="width:14%;">Stok Fisik</th>
+                        <th style="width:10%;">Status</th>
+                        <th style="width:4%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="opnameBody">
+                    <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--gray-500);">
+                        <span style="font-size:32px; display:block; margin-bottom:12px;">⏳</span> Memuat data...
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination" id="paginationContainer">
+            <div class="info" id="paginationInfo">Menampilkan 0 dari 0 data</div>
+            <div class="pages" id="paginationPages"></div>
+        </div>
+
+        <!-- ACTION BAR -->
+        <div class="action-bar">
+            <button onclick="simpanOpname()" class="btn btn-success">💾 Simpan & Update Stok</button>
+            <button onclick="resetOpname()" class="btn btn-outline">↻ Reset Semua</button>
+            <span style="margin-left:auto; font-size:13px; color:var(--gray-500);">
+                <span id="statusSummary">Belum ada data opname</span>
+            </span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ============================================
+    // KONFIGURASI
+    // ============================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyXRokb3LPAyCd9MS07PmxSQX_KnoDyCIAyO01C7atjaw-Ijf--Ii0kbv5iwvsYWevTPw/exec';
+
+    // ============================================
+    // STATE
+    // ============================================
+    let allData = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let opnameResults = {};
+
+    // ============================================
+    // LOAD DATA STOK
+    // ============================================
+    async function loadStokData() {
+        try {
+            const response = await fetch(`${API_URL}?action=getStok`);
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                allData = result.data || [];
+                document.getElementById('totalBarangCount').textContent = allData.length;
+
+                generateNoOpname();
+                currentPage = 1;
+                renderPage(currentPage);
+                updateStatusSummary();
+            } else {
+                document.getElementById('opnameBody').innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">❌ ${result.message}</td></tr>`;
+                document.getElementById('paginationContainer').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('opnameBody').innerHTML = `<tr><td colspan="8" style="color:red; text-align:center;">❌ Error: ${error.message}</td></tr>`;
+            document.getElementById('paginationContainer').style.display = 'none';
+        }
+    }
+
+    // ============================================
+    // GENERATE NOMOR OPNAME
+    // ============================================
+    function generateNoOpname() {
+        const now = new Date();
+        const tanggal = now.getFullYear() + 
+            String(now.getMonth()+1).padStart(2,'0') + 
+            String(now.getDate()).padStart(2,'0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        document.getElementById('noOpname').value = `OPN-${tanggal}-${random}`;
+        document.getElementById('tanggalOpname').value = new Date().toISOString().split('T')[0];
+    }
+
+    // ============================================
+    // RENDER PAGE
+    // ============================================
+    function renderPage(page) {
+        const totalItems = allData.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+
+        const start = (page - 1) * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, totalItems);
+        const pageData = allData.slice(start, end);
+
+        renderOpnameTable(pageData, start);
+        renderPagination(page, totalPages, totalItems);
+    }
+
+    // ============================================
+    // RENDER OPNAME TABLE
+    // ============================================
+    function renderOpnameTable(data, startIndex) {
+        const tbody = document.getElementById('opnameBody');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><span class="icon">📭</span>Tidak ada data barang</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        data.forEach((item, idx) => {
+            const no = startIndex + idx + 1;
+            const id = item.id || '';
+            const nama = item.nama || '-';
+            const satuan = item.satuan || 'Pcs';
+            const stokSistem = parseInt(item.stokAkhir) || 0;
+            const opnameValue = opnameResults[id] !== undefined ? opnameResults[id] : null;
+            
+            let statusHtml = '';
+            let inputClass = '';
+
+            if (opnameValue === null) {
+                statusHtml = '<span class="status-pending">⏳ Belum</span>';
+                inputClass = '';
+            } else if (parseInt(opnameValue) === stokSistem) {
+                statusHtml = '<span class="status-match">✅ Cocok</span>';
+                inputClass = 'match';
+            } else {
+                statusHtml = `<span class="status-mismatch">❌ Tidak Cocok</span>`;
+                inputClass = 'mismatch';
+            }
+
+            html += `
+                <tr>
+                    <td>${no}</td>
+                    <td><strong>${id}</strong></td>
+                    <td>${nama}</td>
+                    <td>${satuan}</td>
+                    <td><strong>${stokSistem}</strong></td>
+                    <td>
+                        <input type="number" class="opname-input ${inputClass}" 
+                               value="${opnameValue !== null ? opnameValue : ''}" 
+                               min="0" 
+                               data-id="${id}"
+                               data-stok="${stokSistem}"
+                               onchange="updateOpname(this)"
+                               placeholder="...">
+                    </td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <button onclick="resetOpnameItem('${id}')" class="btn btn-outline btn-sm" title="Reset">↻</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    // ============================================
+    // UPDATE OPNAME
+    // ============================================
+    function updateOpname(input) {
+        const id = input.dataset.id;
+        const stokSistem = parseInt(input.dataset.stok);
+        const value = input.value.trim() === '' ? null : parseInt(input.value);
+
+        if (value === null || isNaN(value) || value < 0) {
+            delete opnameResults[id];
+            input.value = '';
+        } else {
+            opnameResults[id] = value;
+        }
+
+        updateStatusSummary();
+        renderPage(currentPage);
+    }
+
+    // ============================================
+    // RESET PER ITEM
+    // ============================================
+    function resetOpnameItem(id) {
+        delete opnameResults[id];
+        updateStatusSummary();
+        renderPage(currentPage);
+    }
+
+    // ============================================
+    // RESET SEMUA
+    // ============================================
+    function resetOpname() {
+        if (!confirm('Yakin ingin mereset semua hasil opname?')) return;
+        opnameResults = {};
+        updateStatusSummary();
+        renderPage(currentPage);
+        showAlert('🔄 Semua hasil opname telah direset', 'info');
+    }
+
+    // ============================================
+    // UPDATE STATUS SUMMARY
+    // ============================================
+    function updateStatusSummary() {
+        let totalMatch = 0;
+        let totalMismatch = 0;
+        let totalPending = 0;
+
+        allData.forEach(item => {
+            const id = item.id || '';
+            const stokSistem = parseInt(item.stokAkhir) || 0;
+            const opnameValue = opnameResults[id] !== undefined ? opnameResults[id] : null;
+
+            if (opnameValue === null) {
+                totalPending++;
+            } else if (parseInt(opnameValue) === stokSistem) {
+                totalMatch++;
+            } else {
+                totalMismatch++;
+            }
+        });
+
+        document.getElementById('matchCount').textContent = `${totalMatch} Cocok`;
+        document.getElementById('mismatchCount').textContent = `${totalMismatch} Tidak Cocok`;
+        document.getElementById('pendingCount').textContent = `${totalPending} Belum`;
+
+        const totalItems = allData.length;
+        const totalFilled = totalMatch + totalMismatch;
+        document.getElementById('statusSummary').textContent = 
+            `Total: ${totalItems} barang | Terisi: ${totalFilled} | Cocok: ${totalMatch} | Tidak Cocok: ${totalMismatch} | Belum: ${totalPending}`;
+    }
+
+    // ============================================
+    // PAGINATION
+    // ============================================
+    function renderPagination(current, total, totalItems) {
+        const container = document.getElementById('paginationContainer');
+        const info = document.getElementById('paginationInfo');
+        const pages = document.getElementById('paginationPages');
+
+        if (totalItems === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+        const start = (current - 1) * itemsPerPage + 1;
+        const end = Math.min(current * itemsPerPage, totalItems);
+        info.textContent = `Menampilkan ${start}-${end} dari ${totalItems} data`;
+
+        let html = '';
+
+        html += `<button class="btn btn-outline" onclick="goToPage(${current-1})" ${current <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>◀</button>`;
+
+        const maxVisible = 5;
+        let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
+        let endPage = Math.min(total, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button class="btn btn-outline" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) html += `<span style="padding:0 4px;color:var(--gray-500);">…</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="btn ${i === current ? 'btn-primary active' : 'btn-outline'}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (endPage < total) {
+            if (endPage < total - 1) html += `<span style="padding:0 4px;color:var(--gray-500);">…</span>`;
+            html += `<button class="btn btn-outline" onclick="goToPage(${total})">${total}</button>`;
+        }
+
+        html += `<button class="btn btn-outline" onclick="goToPage(${current+1})" ${current >= total ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>▶</button>`;
+
+        pages.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(allData.length / itemsPerPage) || 1;
+        if (page < 1 || page > totalPages) return;
+        renderPage(page);
+    }
+
+    // ============================================
+    // SIMPAN OPNAME - UPDATE STOK
+    // ============================================
+    async function simpanOpname() {
+        const noOpname = document.getElementById('noOpname').value;
+        const tanggalOpname = document.getElementById('tanggalOpname').value;
+        const petugas = document.getElementById('petugas').value.trim() || '-';
+
+        // Kumpulkan data opname yang sudah diisi
+        const dataOpname = [];
+        let adaData = false;
+
+        allData.forEach(item => {
+            const id = item.id || '';
+            const stokSistem = parseInt(item.stokAkhir) || 0;
+            const hasilOpname = opnameResults[id] !== undefined ? opnameResults[id] : null;
+
+            if (hasilOpname !== null) {
+                adaData = true;
+                dataOpname.push({
+                    idBarang: id,
+                    namaBarang: item.nama || '-',
+                    satuan: item.satuan || 'Pcs',
+                    stokSistem: stokSistem,
+                    hasilOpname: parseInt(hasilOpname),
+                    status: parseInt(hasilOpname) === stokSistem ? 'Cocok' : 'Tidak Cocok',
+                    selisih: parseInt(hasilOpname) - stokSistem
+                });
+            }
+        });
+
+        if (!adaData) {
+            showAlert('⚠️ Belum ada data opname yang diisi!', 'warning');
+            return;
+        }
+
+        if (!tanggalOpname) {
+            showAlert('⚠️ Tanggal opname harus diisi!', 'danger');
+            return;
+        }
+
+        // Konfirmasi sebelum update stok
+        const totalItem = dataOpname.length;
+        const mismatch = dataOpname.filter(d => d.status === 'Tidak Cocok').length;
+        
+        if (!confirm(`📊 Ringkasan Opname:\n\nTotal: ${totalItem} barang\n✅ Cocok: ${totalItem - mismatch}\n❌ Tidak Cocok: ${mismatch}\n\nApakah Anda yakin ingin menyimpan dan memperbarui stok?`)) {
+            return;
+        }
+
+        // Kirim ke server
+        try {
+            const formData = new FormData();
+            formData.append('action', 'updateStokOpname');
+            formData.append('noOpname', noOpname);
+            formData.append('tanggalOpname', tanggalOpname);
+            formData.append('petugas', petugas);
+            formData.append('dataOpname', JSON.stringify(dataOpname));
+
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            });
+
+            showAlert(`✅ Opname berhasil disimpan! ${dataOpname.length} barang diperbarui.`, 'success');
+
+            // Update stok di local state
+            dataOpname.forEach(item => {
+                const barang = allData.find(b => b.id === item.idBarang);
+                if (barang) {
+                    barang.stokAkhir = item.hasilOpname;
+                }
+            });
+
+            // Reset form
+            if (confirm('Opname berhasil disimpan. Ingin mereset form untuk opname baru?')) {
+                opnameResults = {};
+                generateNoOpname();
+                document.getElementById('petugas').value = '';
+                renderPage(currentPage);
+                updateStatusSummary();
+            }
+
+            // Refresh data dari server
+            setTimeout(loadStokData, 2000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('❌ Error: ' + error.message, 'danger');
+        }
+    }
+
+    // ============================================
+    // SHOW ALERT
+    // ============================================
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        const className = type === 'success' ? 'alert-success' : 
+                         type === 'danger' ? 'alert-danger' :
+                         type === 'warning' ? 'alert-warning' : 'alert-info';
+        container.innerHTML = `<div class="alert ${className}">${message}</div>`;
+        setTimeout(() => { container.innerHTML = ''; }, 8000);
+    }
+
+    // ============================================
+    // INISIALISASI
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStokData();
+    });
+</script>
+
+</body>
+</html>

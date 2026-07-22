@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem ATK - Permintaan</title>
+    <style>
+        /* ============================================
+           CSS VARIABLES
+           ============================================ */
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2b6cb0;
+            --primary-lighter: #4299e1;
+            --success: #48bb78;
+            --success-dark: #276749;
+            --danger: #fc8181;
+            --danger-dark: #c53030;
+            --warning: #ed8936;
+            --gray-50: #f7fafc;
+            --gray-100: #edf2f7;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e0;
+            --gray-500: #718096;
+            --gray-700: #2d3748;
+            --gray-900: #1a202c;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        body { background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1280px; margin: 0 auto; }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 24px 32px;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--shadow-md);
+        }
+        .header h1 { font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .header .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+        .header-actions .btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+        .header-actions .btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+        /* NAVIGATION */
+        .nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav a {
+            padding: 10px 22px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav a:hover { background: var(--gray-100); }
+        .nav a.active {
+            background: var(--primary-light);
+            color: white;
+            box-shadow: 0 2px 10px rgba(43, 108, 176, 0.3);
+        }
+
+        /* CARDS */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            transition: var(--transition);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+        .card-title .badge-count {
+            background: var(--primary-light);
+            color: white;
+            font-size: 12px;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* FORM */
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background: white;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-light);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--primary-light); color: white; }
+        .btn-primary:hover { background: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3); }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+        .btn-outline:hover { border-color: var(--primary-light); color: var(--primary-light); }
+        .btn-outline.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        /* ALERT */
+        .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; }
+        .alert-success { background: #c6f6d5; color: var(--success-dark); border-left: 4px solid var(--success); }
+        .alert-danger { background: #fed7d7; color: var(--danger-dark); border-left: 4px solid var(--danger); }
+
+        /* TABLE */
+        .table-wrapper { overflow-x: auto; margin-top: 12px; }
+        .table-wrapper table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .table-wrapper th {
+            background: var(--gray-100);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--gray-700);
+            white-space: nowrap;
+        }
+        .table-wrapper td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
+        }
+        .table-wrapper tr:hover td { background: var(--gray-50); }
+        .table-wrapper .badge {
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .table-wrapper .badge-masuk { background: #c6f6d5; color: var(--success-dark); }
+        .table-wrapper .badge-keluar { background: #fed7d7; color: var(--danger-dark); }
+        .table-wrapper .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-500);
+        }
+        .table-wrapper .empty-state .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+
+        /* FILTER SUMMARY */
+        .filter-summary {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: white;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .filter-summary .tag {
+            background: var(--gray-100);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* PAGINATION */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+        }
+        .pagination .info {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        .pagination .pages {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .pagination .pages .btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            min-width: 36px;
+            justify-content: center;
+        }
+        .pagination .pages .btn.active {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .header { padding: 18px 20px; flex-direction: column; text-align: center; }
+            .header h1 { font-size: 20px; justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-row-3 { grid-template-columns: 1fr; }
+            .pagination { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div>
+            <h1>📝 Permintaan ATK</h1>
+            <div class="subtitle">Form permintaan dengan tanggal & riwayat transaksi</div>
+        </div>
+        <div class="header-actions">
+            <button onclick="resetFilters()" class="btn">🔄 Reset Filter</button>
+            <button onclick="location.reload()" class="btn">⟳ Refresh</button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="nav">
+        <a href="index.html">📊 Dashboard</a>
+        <a href="permintaan.html">📝 Permintaan</a>
+        <a href="pembelian.html">🛒 Pembelian</a>
+        <a href="kartu-stok.html" class="active">📋 Kartu Stok</a>
+        <a href="stok-opname.html">📊 Stok Opname</a>
+    </nav>
+
+    <!-- ============================================
+    FORM PERMINTAAN - DENGAN TANGGAL
+    ============================================ -->
+    <div class="card">
+        <div class="card-title">📝 Form Permintaan ATK</div>
+        <div id="alertContainer"></div>
+        <form id="permintaanForm" onsubmit="submitPermintaan(event)">
+            <!-- TANGGAL PERMINTAAN -->
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>📅 Tanggal Permintaan *</label>
+                    <input type="date" id="tanggalPermintaan" required>
+                </div>
+                <div class="form-group">
+                    <label>👤 Nama Peminta *</label>
+                    <input type="text" id="namaPeminta" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label>🏢 Fungsi *</label>
+                    <select id="fungsi" required>
+                        <option value="">Pilih Fungsi</option>
+                        <option value="Tata Usaha">Tata Usaha</option>
+                        <option value="Pemeriksaan">Pemeriksaan</option>
+                        <option value="Pengujian">Pengujian</option>
+                        <option value="Sertifikasi">Sertifikasi</option>
+                        <option value="Infokom">Infokom</option>
+                        <option value="Penindakan">Penindakan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>📦 Pilih Barang *</label>
+                    <select id="pilihBarang" required>
+                        <option value="">-- Pilih Barang --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>🔢 Jumlah *</label>
+                    <input type="number" id="jumlah" placeholder="Jumlah" min="1" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">📤 Kirim Permintaan</button>
+        </form>
+    </div>
+
+    <!-- ============================================
+    RIWAYAT TRANSAKSI - DENGAN PAGINATION
+    ============================================ -->
+    <div class="card">
+        <div class="card-title">
+            📋 Riwayat Transaksi
+            <span class="badge-count" id="totalTransaksiCount">0</span>
+        </div>
+
+        <!-- FILTER TANGGAL -->
+        <div class="form-row-3">
+            <div class="form-group">
+                <label>📅 Dari Tanggal</label>
+                <input type="date" id="filterTanggalMulai" onchange="loadRiwayat()">
+            </div>
+            <div class="form-group">
+                <label>📅 Sampai Tanggal</label>
+                <input type="date" id="filterTanggalSampai" onchange="loadRiwayat()">
+            </div>
+            <div class="form-group" style="display:flex; align-items:flex-end;">
+                <button onclick="resetFilters()" class="btn btn-outline" style="width:100%; justify-content:center;">
+                    🔄 Reset
+                </button>
+            </div>
+        </div>
+
+        <div id="filterSummary" class="filter-summary" style="display:none;"></div>
+
+        <!-- TABLE -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>📅 Tanggal</th>
+                        <th>📦 Barang</th>
+                        <th>📌 Jenis</th>
+                        <th>🔢 Jumlah</th>
+                        <th>👤 Peminta</th>
+                        <th>🏢 Fungsi</th>
+                        <th>📝 Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody id="riwayatBody">
+                    <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--gray-500);">⏳ Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination" id="paginationContainer">
+            <div class="info" id="paginationInfo">Menampilkan 0 dari 0 data</div>
+            <div class="pages" id="paginationPages"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ============================================
+    // KONFIGURASI
+    // ============================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyXRokb3LPAyCd9MS07PmxSQX_KnoDyCIAyO01C7atjaw-Ijf--Ii0kbv5iwvsYWevTPw/exec';
+
+    // ============================================
+    // STATE
+    // ============================================
+    let allData = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    // ============================================
+    // LOAD BARANG OPTIONS
+    // ============================================
+    async function loadBarangOptions() {
+        try {
+            const response = await fetch(`${API_URL}?action=getBarangOptions`);
+            const result = await response.json();
+            if (result.status === 'success') {
+                const select = document.getElementById('pilihBarang');
+                select.innerHTML = '<option value="">-- Pilih Barang --</option>';
+                result.data.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}" data-stok="${item.stok}">${item.nama} (Stok: ${item.stok})</option>`;
+                });
+            }
+        } catch (error) {
+            console.error('Error load barang:', error);
+        }
+    }
+
+    // ============================================
+    // LOAD RIWAYAT
+    // ============================================
+    async function loadRiwayat() {
+        const tglMulai = document.getElementById('filterTanggalMulai').value;
+        const tglSampai = document.getElementById('filterTanggalSampai').value;
+
+        try {
+            let url = `${API_URL}?action=getTransaksi`;
+            if (tglMulai) url += `&tanggalMulai=${encodeURIComponent(tglMulai)}`;
+            if (tglSampai) url += `&tanggalSampai=${encodeURIComponent(tglSampai)}`;
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                allData = result.data || [];
+                document.getElementById('totalTransaksiCount').textContent = allData.length;
+                updateFilterSummary(tglMulai, tglSampai, allData.length);
+                currentPage = 1;
+                renderPage(currentPage);
+            } else {
+                document.getElementById('riwayatBody').innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">❌ ${result.message || 'Gagal memuat data'}</td></tr>`;
+                document.getElementById('paginationContainer').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('❌ Error:', error);
+            document.getElementById('riwayatBody').innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">❌ Error: ${error.message}</td></tr>`;
+            document.getElementById('paginationContainer').style.display = 'none';
+        }
+    }
+
+    // ============================================
+    // RENDER PAGE - PAGINATION
+    // ============================================
+    function renderPage(page) {
+        const totalItems = allData.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+
+        const start = (page - 1) * itemsPerPage;
+        const end = Math.min(start + itemsPerPage, totalItems);
+        const pageData = allData.slice(start, end);
+
+        renderRiwayat(pageData);
+        renderPagination(page, totalPages, totalItems);
+    }
+
+    // ============================================
+    // RENDER RIWAYAT
+    // ============================================
+    function renderRiwayat(data) {
+        const tbody = document.getElementById('riwayatBody');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><span class="icon">📭</span>Tidak ada transaksi</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        data.forEach(item => {
+            const badge = item.jenis === 'Masuk' ? 'badge-masuk' : 'badge-keluar';
+            let tgl = item.tanggal || '';
+            if (typeof tgl !== 'string') tgl = String(tgl);
+            const tglDisplay = tgl.length > 16 ? tgl.substring(0, 16) : tgl;
+
+            html += `<tr>
+                <td>${tglDisplay || '-'}</td>
+                <td><strong>${item.namaBarang || '-'}</strong></td>
+                <td><span class="badge ${badge}">${item.jenis || '-'}</span></td>
+                <td>${item.jumlah || 0}</td>
+                <td>${item.namaPeminta || '-'}</td>
+                <td>${item.fungsi || '-'}</td>
+                <td>${item.keterangan || '-'}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    // ============================================
+    // RENDER PAGINATION
+    // ============================================
+    function renderPagination(current, total, totalItems) {
+        const container = document.getElementById('paginationContainer');
+        const info = document.getElementById('paginationInfo');
+        const pages = document.getElementById('paginationPages');
+
+        if (totalItems === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+        info.textContent = `Menampilkan ${((current-1)*itemsPerPage)+1}-${Math.min(current*itemsPerPage, totalItems)} dari ${totalItems} data`;
+
+        let html = '';
+
+        // Tombol Previous
+        html += `<button class="btn btn-outline" onclick="goToPage(${current-1})" ${current <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>◀</button>`;
+
+        // Nomor halaman
+        const maxVisible = 5;
+        let startPage = Math.max(1, current - Math.floor(maxVisible / 2));
+        let endPage = Math.min(total, startPage + maxVisible - 1);
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button class="btn btn-outline" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) html += `<span style="padding:0 4px;color:var(--gray-500);">…</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="btn ${i === current ? 'btn-primary active' : 'btn-outline'}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (endPage < total) {
+            if (endPage < total - 1) html += `<span style="padding:0 4px;color:var(--gray-500);">…</span>`;
+            html += `<button class="btn btn-outline" onclick="goToPage(${total})">${total}</button>`;
+        }
+
+        // Tombol Next
+        html += `<button class="btn btn-outline" onclick="goToPage(${current+1})" ${current >= total ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>▶</button>`;
+
+        pages.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(allData.length / itemsPerPage) || 1;
+        if (page < 1 || page > totalPages) return;
+        renderPage(page);
+    }
+
+    // ============================================
+    // FILTER SUMMARY
+    // ============================================
+    function updateFilterSummary(tglMulai, tglSampai, total) {
+        const summary = document.getElementById('filterSummary');
+        let tags = [];
+        if (tglMulai) tags.push(`<span class="tag">📅 Dari ${tglMulai}</span>`);
+        if (tglSampai) tags.push(`<span class="tag">📅 Sampai ${tglSampai}</span>`);
+
+        if (tags.length > 0) {
+            summary.innerHTML = `
+                <span style="font-weight:600;">Filter aktif:</span>
+                ${tags.join(' ')}
+                <span style="margin-left:auto; color:var(--gray-500);">Menampilkan <strong>${total}</strong> transaksi</span>
+            `;
+            summary.style.display = 'flex';
+        } else {
+            summary.style.display = 'none';
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('filterTanggalMulai').value = '';
+        document.getElementById('filterTanggalSampai').value = '';
+        loadRiwayat();
+    }
+
+    // ============================================
+    // SUBMIT PERMINTAAN - DENGAN TANGGAL
+    // ============================================
+    async function submitPermintaan(e) {
+        e.preventDefault();
+
+        const tanggal = document.getElementById('tanggalPermintaan').value;
+        const nama = document.getElementById('namaPeminta').value.trim();
+        const fungsi = document.getElementById('fungsi').value;
+        const select = document.getElementById('pilihBarang');
+        const idBarang = select.value;
+        const namaBarang = select.options[select.selectedIndex]?.text || '';
+        const jumlah = parseInt(document.getElementById('jumlah').value);
+
+        if (!tanggal || !nama || !fungsi || !idBarang || !jumlah) {
+            showAlert('⚠️ Semua field harus diisi!', 'danger');
+            return;
+        }
+
+        const stokTersedia = parseInt(select.options[select.selectedIndex]?.getAttribute('data-stok')) || 0;
+        if (jumlah > stokTersedia) {
+            showAlert(`⚠️ Stok tidak mencukupi! Tersisa: ${stokTersedia}`, 'danger');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'tambahPermintaan');
+        formData.append('tanggal', tanggal);
+        formData.append('namaPeminta', nama);
+        formData.append('fungsi', fungsi);
+        formData.append('idBarang', idBarang);
+        formData.append('namaBarang', namaBarang);
+        formData.append('jumlah', jumlah);
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            });
+
+            showAlert('✅ Permintaan berhasil dikirim!', 'success');
+            document.getElementById('permintaanForm').reset();
+            document.getElementById('tanggalPermintaan').value = new Date().toISOString().split('T')[0];
+            loadBarangOptions();
+            setTimeout(loadRiwayat, 1000);
+        } catch (error) {
+            showAlert('❌ Error: ' + error.message, 'danger');
+        }
+    }
+
+    function showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        const className = type === 'success' ? 'alert-success' : 'alert-danger';
+        container.innerHTML = `<div class="alert ${className}">${message}</div>`;
+        setTimeout(() => { container.innerHTML = ''; }, 5000);
+    }
+
+    // ============================================
+    // INISIALISASI
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set tanggal hari ini sebagai default
+        document.getElementById('tanggalPermintaan').value = new Date().toISOString().split('T')[0];
+        loadBarangOptions();
+        loadRiwayat();
+    });
+</script>
+
+</body>
+</html>

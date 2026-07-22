@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem ATK - Dashboard</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f4f8; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header .subtitle { font-size: 14px; opacity: 0.8; }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .nav a { background: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; color: #2d3748; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .nav a.active { background: #2b6cb0; color: white; }
+        .nav a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(43,108,176,0.3); }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; color: #2d3748; font-size: 18px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: linear-gradient(135deg, #ebf4ff, #bee3f8); padding: 15px; border-radius: 10px; text-align: center; }
+        .stat-box .number { font-size: 28px; font-weight: 700; color: #2b6cb0; }
+        .stat-box .label { font-size: 13px; color: #4a5568; }
+        .stat-box.green { background: linear-gradient(135deg, #f0fff4, #c6f6d5); }
+        .stat-box.green .number { color: #48bb78; }
+        .stat-box.red { background: linear-gradient(135deg, #fff5f5, #fed7d7); }
+        .stat-box.red .number { color: #fc8181; }
+        .stat-box.orange { background: linear-gradient(135deg, #fffbeb, #feebc8); }
+        .stat-box.orange .number { color: #ed8936; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        table th { background: #edf2f7; padding: 12px; text-align: left; font-weight: 600; color: #2d3748; }
+        table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+        table tr:hover { background: #f7fafc; }
+        .badge { padding: 3px 12px; border-radius: 20px; font-size: 12px; color: white; }
+        .badge.green { background: #48bb78; }
+        .badge.orange { background: #ed8936; }
+        .badge.red { background: #fc8181; }
+        .badge.gray { background: #a0aec0; }
+        .loading { text-align: center; padding: 40px; color: #718096; }
+        .refresh-btn { background: rgba(255,255,255,0.2); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; color: white; font-size: 13px; }
+        .refresh-btn:hover { background: rgba(255,255,255,0.3); }
+        @media (max-width: 768px) { .header { flex-direction: column; text-align: center; } .stats { grid-template-columns: 1fr 1fr; } table { font-size: 12px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📊 SIAP ATK Balai POM Banyumas</h1>
+                <div class="subtitle">SIstem Aplikasi Pengelolaan ATK</div>
+                <div class="subtitle">Rekap Stok & Transaksi Real-time</div>
+            </div>
+            <div style="font-size:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span id="lastUpdate">🔄 Memuat...</span>
+                <button class="refresh-btn" onclick="loadDashboard()">↻ Refresh</button>
+            </div>
+        </div>
+
+        <div class="nav">
+              <a href="index.html">📊 Dashboard</a>
+              <a href="permintaan.html">📝 Permintaan</a>
+              <a href="pembelian.html">🛒 Pembelian</a>
+              <a href="kartu-stok.html" class="active">📋 Kartu Stok</a>
+              <a href="stok-opname.html">📊 Stok Opname</a>
+        </div>
+
+        <!-- Statistik Rekap -->
+        <div class="stats" id="statsContainer">
+            <div class="stat-box"><div class="number" id="totalBarang">0</div><div class="label">Total Barang</div></div>
+            <div class="stat-box"><div class="number" id="totalStok">0</div><div class="label">Total Stok</div></div>
+            <div class="stat-box orange"><div class="number" id="stokRendah">0</div><div class="label">Stok Menipis</div></div>
+            <div class="stat-box green"><div class="number" id="totalMasuk">0</div><div class="label">Total Masuk</div></div>
+            <div class="stat-box red"><div class="number" id="totalKeluar">0</div><div class="label">Total Keluar</div></div>
+            <div class="stat-box"><div class="number" id="totalPermintaan">0</div><div class="label">Total Permintaan</div></div>
+        </div>
+
+        <!-- Tabel Stok -->
+        <div class="card">
+            <h2>📦 Data Stok Barang</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Barang</th>
+                            <th>Stok Awal</th>
+                            <th>Masuk</th>
+                            <th>Keluar</th>
+                            <th>Stok Akhir</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stokTableBody">
+                        <tr><td colspan="7" class="loading">⏳ Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyXRokb3LPAyCd9MS07PmxSQX_KnoDyCIAyO01C7atjaw-Ijf--Ii0kbv5iwvsYWevTPw/exec'; // GANTI DENGAN URL ANDA
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}?action=getDashboard`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const d = result.data;
+                    document.getElementById('totalBarang').textContent = d.totalBarang || 0;
+                    document.getElementById('totalStok').textContent = d.totalStok || 0;
+                    document.getElementById('stokRendah').textContent = d.stokRendah || 0;
+                    document.getElementById('totalMasuk').textContent = d.totalMasuk || 0;
+                    document.getElementById('totalKeluar').textContent = d.totalKeluar || 0;
+                    document.getElementById('totalPermintaan').textContent = d.totalPermintaan || 0;
+                    document.getElementById('lastUpdate').textContent = '🔄 Update: ' + new Date().toLocaleTimeString('id-ID');
+                    
+                    renderStokTable(d.daftarBarang || []);
+                } else {
+                    document.getElementById('stokTableBody').innerHTML = '<tr><td colspan="7" style="color:red;">❌ ' + (result.message || 'Gagal memuat data') + '</td></tr>';
+                }
+            } catch (error) {
+                document.getElementById('stokTableBody').innerHTML = '<tr><td colspan="7" style="color:red;">❌ Error koneksi</td></tr>';
+                console.error(error);
+            }
+        }
+
+        function renderStokTable(data) {
+            const tbody = document.getElementById('stokTableBody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">📭 Belum ada data</td></tr>';
+                return;
+            }
+
+            let html = '';
+            data.forEach(item => {
+                const stok = item.stokAkhir || 0;
+                let badge = 'badge green';
+                let status = 'Tersedia';
+                if (stok <= 0) { badge = 'badge red'; status = 'Habis'; }
+                else if (stok < 10) { badge = 'badge orange'; status = 'Menipis'; }
+
+                html += `<tr>
+                    <td><strong>${item.id || '-'}</strong></td>
+                    <td>${item.nama || '-'}</td>
+                    <td>${item.stokAwal || 0}</td>
+                    <td>${item.barangMasuk || 0}</td>
+                    <td>${item.barangKeluar || 0}</td>
+                    <td><strong>${stok}</strong></td>
+                    <td><span class="${badge}">${status}</span></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Auto refresh setiap 30 detik
+        setInterval(loadDashboard, 30000);
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
